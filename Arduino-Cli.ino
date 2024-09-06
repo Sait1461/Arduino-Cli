@@ -48,7 +48,6 @@ void(* resetFunc) (void) = 0;  //REBOOT
 void Clear() {Serial.print("\033c");}  //CLEAR
 void Time(){  //TIME
   //Minutes '-m'
-  Serial.println(Input);
   if (Input.length() > TIMe.length() && Input.charAt(Input.indexOf("-") + 1) == 109) {
     Serial.println(millis() / 60000);
   }else{
