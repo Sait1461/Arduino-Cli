@@ -17,17 +17,12 @@ void setup() {
 //VARIABLES ABOUT THE TYPED WORDS
 String Input="";
 String incomingString="";
-int length=0;
 bool command = false;
 bool ELSe=false;
-//COMMANDS
-String HELp="help";
-String CLEAr="clear";
-String REBOOt="reboot";
-String TIMe="time";
 //VARIABLES FOR PROCESSES
-int i=0;
 int iteration=0;
+//COMMANDS
+const String Commands[] = {"help","clear","reboot","time"};
 
 void Help() { //HELP
   Serial.println("");
@@ -37,14 +32,26 @@ void Help() { //HELP
   Serial.println("time\tDisplay the time since boot.");
   Serial.println("");
 }
-void(* resetFunc) (void) = 0;  //REBOOT
+void(* Reboot) (void) = 0;  //REBOOT
 void Clear() {Serial.print("\033c");}  //CLEAR
 void Time(){  //TIME
   //Minutes '-m'
-  if (Input.length() > TIMe.length() && Input.charAt(Input.indexOf("-") + 1) == 109) {
+  if (Input.length() > Commands[4].length() && Input.charAt(Input.indexOf("-") + 1) == 109) {
     Serial.println(millis() / 60000);
   }else{
     Serial.println(millis() / 1000);
+  }
+}
+
+void All(){
+  if (iteration == 0) {
+    Help();
+  } else if (iteration == 1) {
+    Clear();
+  } else if (iteration == 2) {
+    Reboot();
+  } else if (iteration == 3) {
+    Time();
   }
 }
 
@@ -61,46 +68,29 @@ void loop() {
       if (Input.length()==0) {  /*If input IS empty*/
         Serial.print("\r");
       } else {  /*If input ISN'T empty*/
-      //HELP
-      iteration=0;
-      while (iteration < Input.length() && Input.charAt(iteration) == HELp.charAt(iteration)) {iteration=iteration + 1;}/*Checks for length and order*/
-      if (iteration == HELp.length() && (! Input.charAt(iteration) || Input.indexOf(32) == HELp.length())) {  /*If input IS 'clear' OR 'clear '*/
-        Help();
-        command=true;
-      }
-      //CLEAR
-      iteration=0;
-      while (iteration < Input.length() && Input.charAt(iteration) == CLEAr.charAt(iteration)) {iteration=iteration + 1;}/*Checks for length and order*/
-      if (iteration == CLEAr.length() && (! Input.charAt(iteration) || Input.indexOf(32) == CLEAr.length())) {  /*If input IS 'clear' OR 'clear '*/
-        Clear();
-        command=true;
-      }
-      //REBOOT
-      iteration=0;
-      while (iteration < Input.length() && Input.charAt(iteration) == REBOOt.charAt(iteration)) {iteration=iteration + 1;}/*Checks for length and order*/
-      if (iteration == REBOOt.length() && (! Input.charAt(iteration) || Input.indexOf(32) == REBOOt.length())) {  /*If input IS 'reboot' OR 'reboot '*/
-        resetFunc();
-        command=true;
-      }
-      //TIME
-      iteration=0;
-      while (iteration < Input.length() && Input.charAt(iteration) == TIMe.charAt(iteration)) {iteration=iteration + 1;}/*Checks for length and order*/
-      if (iteration == TIMe.length() && (! Input.charAt(iteration) || Input.indexOf(32) == TIMe.length())) {  /*If input IS 'reboot' OR 'reboot '*/
-        Time();
-        command=true;
-      }
-      //INVALID COMMAND
-      if ( ! command) {  /*If input ISN'T a command*/
-        Serial.println( "\"" + Input + "\" Is not a command");
-      }
-      Input = "";  /*Reset the input after every enter*/
+        //CHECK IF INPUT IS ANY COMMAND
+        iteration=0;
+        while (iteration < sizeof(Commands)/sizeof(Commands[0]) && ! command) {
+          int i=0;
+          while (i < Input.length() && Input.charAt(i) == Commands[iteration].charAt(i)) {i++;}/*Checks for length and order*/
+          if (i == Commands[iteration].length() && (! Input.charAt(i) || Input.indexOf(32) == Commands[iteration].length())) {  /*If input IS '[COMMAND]]' OR '[COMMAND] '*/
+          command=true;
+          All();
+          }
+          iteration++;
+        }
+        //INVALID COMMAND
+        if ( ! command) {  /*If input ISN'T a command*/
+          Serial.println( "\"" + Input + "\" Is not a command");
+        }
+        Input = "";  /*Reset the input after every enter*/
       }
     } else if (incomingString.indexOf(127) >= 0) {  //BACKSPACE
       ELSe=false;
       iteration=0;
       while (iteration < incomingString.length() && ! ELSe) {  /*Detect if NOT ONLY backspaces in string*/
         if (incomingString.charAt(iteration) != 127) {ELSe=true;}
-        iteration=iteration + 1;
+        iteration++;
       }
       iteration=0;
       while (incomingString.indexOf(127) >= 0 && ELSe) {  /*Check where to delete*/
@@ -116,18 +106,18 @@ void loop() {
             incomingString.remove(incomingString.indexOf(127) - 1, 2);
           }
         }
-        iteration=iteration + 1;
+        iteration++;
       }
       if (ELSe) {  /*An update if there WEREN'T ONLY backspaces*/
         Input= Input + incomingString;
       }
 
       if ( ! ELSe) {  /*If its ONLY backspaces*/
-        length = incomingString.length();
-        if (length > Input.length() ) {  /*If you try to delete more times than there's letters*/
-          length=Input.length();
+        if (incomingString.length() > Input.length() ) {  /*If you try to delete more times than there's letters*/
+          Input.remove(0,Input.length());
+        } else {
+          Input.remove(Input.length() - incomingString.length());
         }
-        Input.remove(Input.length() - length);
       }
     } else {  //BASIC INPUT
       Input=Input + incomingString;
