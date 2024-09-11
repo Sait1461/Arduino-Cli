@@ -5,12 +5,12 @@ const String Cursor="⦁";
 
 void Banner() {  //STARTUP MESSAGE
   Serial.print("\033c");
-  Serial.println("Wait for the typed letters to appear before submitting.");
   Serial.println("Type \"help\" for a list of commands.");
   Serial.print(Name + Cursor +"\r");
 }
 void setup() {
   Serial.begin(115200);
+  Serial.setTimeout(0);
   Banner();
 }
 
@@ -18,7 +18,6 @@ void setup() {
 String Input="";
 String incomingString="";
 bool command = false;
-bool ELSe=false;
 //VARIABLES FOR PROCESSES
 int iteration=0;
 //COMMANDS
@@ -35,11 +34,12 @@ void Help() { //HELP
 void(* Reboot) (void) = 0;  //REBOOT
 void Clear() {Serial.print("\033c");}  //CLEAR
 void Time(){  //TIME
-  //Minutes '-m'
-  if (Input.length() > Commands[4].length() && Input.charAt(Input.indexOf("-") + 1) == 109) {
-    Serial.println(millis() / 60000);
-  }else{
-    Serial.println(millis() / 1000);
+  if (Input.length() > Commands[4].length() && Input.charAt(Input.indexOf("-") + 1) == 109) {//Minutes '-m'
+    Serial.print(millis() / 60000);Serial.println("m");
+  } else if (Input.length() > Commands[4].length() && Input.charAt(Input.indexOf("-") + 1) == 77) {//Minutes with float '-M'
+    Serial.print(millis() / 60000.0);Serial.println("m");
+  } else {
+    Serial.print(millis() / 1000);Serial.println("s");
   }
 }
 
@@ -86,43 +86,15 @@ void loop() {
         Input = "";  /*Reset the input after every enter*/
       }
     } else if (incomingString.indexOf(127) >= 0) {  //BACKSPACE
-      ELSe=false;
-      iteration=0;
-      while (iteration < incomingString.length() && ! ELSe) {  /*Detect if NOT ONLY backspaces in string*/
-        if (incomingString.charAt(iteration) != 127) {ELSe=true;}
-        iteration++;
-      }
-      iteration=0;
-      while (incomingString.indexOf(127) >= 0 && ELSe) {  /*Check where to delete*/
-        if (incomingString.indexOf(127) >= 0) {  /*If there ARE backspaces*/
-          while (iteration == 0 && (incomingString.charAt(iteration) == 127)){  /*Checks if string starts with backspaces*/
-            if (Input.length() != 0){  /*If there's room to delete, do so*/
-              Input.remove(Input.length() - 1);
-            } else {Serial.print("\a");}
-            incomingString.remove(0,1);
-          }
-          /*This only runs AFTER checking the starter backspaces*/
-          if (incomingString.indexOf(127) >= 0) {
-            incomingString.remove(incomingString.indexOf(127) - 1, 2);
-          }
-        }
-        iteration++;
-      }
-      if (ELSe) {  /*An update if there WEREN'T ONLY backspaces*/
-        Input= Input + incomingString;
-      }
-
-      if ( ! ELSe) {  /*If its ONLY backspaces*/
-        if (incomingString.length() > Input.length() ) {  /*If you try to delete more times than there's letters*/
-          Input.remove(0,Input.length());
-        } else {
-          Input.remove(Input.length() - incomingString.length());
-        }
+      if (incomingString.length() > Input.length() ) {  /*If you try to delete more times than there's letters*/
+        Input.remove(0,Input.length());
+      } else {
+        Input.remove(Input.length() - incomingString.length());
       }
     } else {  //BASIC INPUT
       Input=Input + incomingString;
     }
-    //DETECT & REMOVE INVALID CHARS (SHOUDLN'T BE ANY)
+    //DETECT & REMOVE INVALID CHARS
     while (Input.indexOf("\x1B[A") >= 0 || Input.indexOf("\x1B[B") >= 0 || Input.indexOf("\x1B[C") >= 0 || Input.indexOf("\x1B[D") >= 0 || Input.indexOf(127) >= 0 || Input.indexOf(9) >= 0) {
       if (Input.indexOf(127) >= 0) {Input.remove(Input.indexOf(127), 1);}  /*Enter*/
       if (Input.indexOf("\x1B[A") >= 0) {Input.remove(Input.indexOf("\x1B[A"), 3);}  /*Up*/
