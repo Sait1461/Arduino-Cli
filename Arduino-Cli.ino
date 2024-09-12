@@ -36,8 +36,6 @@ void Clear() {Serial.print("\033c");}  //CLEAR
 void Time(){  //TIME
   if (Input.length() > Commands[4].length() && Input.charAt(Input.indexOf("-") + 1) == 109) {//Minutes '-m'
     Serial.print(millis() / 60000);Serial.println("m");
-  } else if (Input.length() > Commands[4].length() && Input.charAt(Input.indexOf("-") + 1) == 77) {//Minutes with float '-M'
-    Serial.print(millis() / 60000.0);Serial.println("m");
   } else {
     Serial.print(millis() / 1000);Serial.println("s");
   }
