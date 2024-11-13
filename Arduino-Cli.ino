@@ -55,10 +55,24 @@ void All(){
   }
 }
 
+void Invalid() {
+    //DETECT & REMOVE INVALID CHARS
+    while (Input.indexOf("\x1B[A") >= 0 || Input.indexOf("\x1B[B") >= 0 || Input.indexOf("\x1B[C") >= 0 || Input.indexOf("\x1B[D") >= 0 || Input.indexOf(127) >= 0 || Input.indexOf(9) >= 0) {
+      if (Input.indexOf(127) >= 0) {Input.remove(Input.indexOf(127), 1);}  /*Enter*/
+      if (Input.indexOf("\x1B[A") >= 0) {Input.remove(Input.indexOf("\x1B[A"), 3);}  /*Up*/
+      if (Input.indexOf("\x1B[B") >= 0) {Input.remove(Input.indexOf("\x1B[B"), 3);}  /*Down*/
+      if (Input.indexOf("\x1B[C") >= 0) {Input.remove(Input.indexOf("\x1B[C"), 3);}  /*Right*/
+      if (Input.indexOf("\x1B[D") >= 0) {Input.remove(Input.indexOf("\x1B[D"), 3);}  /*Left*/
+      if (Input.indexOf(9) >= 0) {Input.remove(Input.indexOf(9), 1);}  /*Tab*/
+    }
+}
+
 void COMMANDS(){
   command=false;
+  Serial.println("\033[2K" + Name + Input + Cursor + "\r");
   if (Input.length()==0) {  /*If input IS empty*/
       Serial.print("\r");
+
   } else {  /*If input ISN'T empty*/
     //CHECK IF INPUT IS ANY COMMAND
     iteration=0;
@@ -73,13 +87,12 @@ void COMMANDS(){
     }
     //INVALID COMMAND
     if ( ! command) {  /*If input ISN'T a command*/
-      Serial.println();
       Serial.println("\"" + Input + "\" Is not a command");
     }  
-    Input = "";  /*Reset the input after every enter*/
   }
-  Done = false;
+  Input = "";  /*Reset the input after every enter*/
   Serial.print("\033[2K" + Name + Input + Cursor + "\r");
+  Done = false;
 }
 void Console(String NAME) {
   if (Serial.available() > 0) {  //If theres anything being typed at all
@@ -89,7 +102,6 @@ void Console(String NAME) {
       Serial.print("\r");
       Input="";
     } else if (incomingString.indexOf(13) >= 0) {  //ENTER
-      Serial.print("\033[2K" + NAME + Input + "\r"); /*To remove the cursor from previous line*/
       Done=true;
     } else if (incomingString.indexOf(127) >= 0) {  //BACKSPACE
       if (incomingString.length() > Input.length() ) {  /*If you try to delete more times than there's letters*/
@@ -100,15 +112,7 @@ void Console(String NAME) {
     } else {  //BASIC INPUT
       Input=Input + incomingString;
     }
-    //DETECT & REMOVE INVALID CHARS
-    while (Input.indexOf("\x1B[A") >= 0 || Input.indexOf("\x1B[B") >= 0 || Input.indexOf("\x1B[C") >= 0 || Input.indexOf("\x1B[D") >= 0 || Input.indexOf(127) >= 0 || Input.indexOf(9) >= 0) {
-      if (Input.indexOf(127) >= 0) {Input.remove(Input.indexOf(127), 1);}  /*Enter*/
-      if (Input.indexOf("\x1B[A") >= 0) {Input.remove(Input.indexOf("\x1B[A"), 3);}  /*Up*/
-      if (Input.indexOf("\x1B[B") >= 0) {Input.remove(Input.indexOf("\x1B[B"), 3);}  /*Down*/
-      if (Input.indexOf("\x1B[C") >= 0) {Input.remove(Input.indexOf("\x1B[C"), 3);}  /*Right*/
-      if (Input.indexOf("\x1B[D") >= 0) {Input.remove(Input.indexOf("\x1B[D"), 3);}  /*Left*/
-      if (Input.indexOf(9) >= 0) {Input.remove(Input.indexOf(9), 1);}  /*Tab*/
-    }
+    Invalid();
     Serial.print("\033[2K" + NAME + Input + Cursor + "\r");
   }
 }
